@@ -198,35 +198,29 @@ variable "vpc_endpoints" {
   default     = null
   type = list(
     object({
-      name                = string
+      name         = string
  
       #Specify the AWS service this endpoint is for
-      service_name        = string
-      auto_accept         = bool
-      private_dns_enabled = bool
-      security_group_ids  = list(string)
-   
-      #Below settings determine how we pull subnet and VPC ID values
-      #Will use this value if not set to null
-      #Will IGNORE vpc_name if vpc_id is not null
-      vpc_id              = string
-      
-      #Set this value to allow lookups of names of subnets in this module
-      #Must set vpc_name to the name of a VPC set in this module
-      vpc_name            = string
+      service_name = string
 
-      #Can be "Gateway", "GatewayLoadBalancer", or "Interface"
-      vpc_endpoint_type   = string
-      tags                = map(string)
+      #The VPC this is assigned to
+      vpc          = string
 
-      #Specifies the subnet this endpoint is for
-      #Can use the name of a subnet in this file, or the ID if you know it
-      subnets             = list(
-        object({
-          name = string
-          id   = string
-        })
-      )
+      #Sets optional values
+      #Valid values include:
+      #  - "auto_accept" - Accept the VPC endpoint (the VPC endpoint and service need to be in the same AWS account).
+      #  - "private_dns_enabled" -  (AWS services and AWS Marketplace partner services only) Whether or not to associate a private hosted zone with the specified VPC. Applicable for endpoints of type Interface.
+      #  - "ip_address_type"="<ipv4|ipv6|dual stack>" - The IP address type for the endpoint. Valid values are ipv4, dualstack, and ipv6.
+      #  - "security_groups"="<list of security groups>" - list of security groups to associate with this endpoint. Applicable for endpoints of type Interface. Can be security group defined here or external security group
+      #  - "subnets"="<list of subnets>" - list of subnets this endpoint is for. Applicable for endpoints of type GatewayLoadBalancer and Interface. Can be for subnets defined here or externally
+      #  - "route_tables"="<route table name or IDs>" - One or more route table names or IDs. Applicable for endpoints of type Gateway.
+      #  - "vpc_endpoint_type"="<Gateway|Interface|GatewayLoadBalancer>" - The VPC endpoint type. Gateway, GatewayLoadBalancer, or Interface. Defaults to Gateway.
+      #  - "dns_record_ip_type"="<ipv4|dualstack|service-defined|ipv6>"
+      #  - "iam_policy"=<string> - either the name of the iam policy or the ID
+      #  - "iam_policy_file"=<path> - read in a JSON file of an IAM policy
+      #  - "tags" - tags for this VPC endpoint
+      options      = map(string)
+
     })
   )
 }
@@ -288,22 +282,43 @@ variable "route_tables" {
   type = list(
       object({
         #Name of route table
-        name             = string
-  
-        #Can be set to VPC name set in this module in vpc_setup variable or external VPC id
-        vpc_name_or_id   = string
-        propagating_vgws = list(string)
-        tags             = map(string)
+        name    = string
 
-        routes           = list(object({
-            cidr_block                 = string
-            ipv6_cidr_block            = string
-            destination_prefix_list_id = string
-            type                       = string
-            destination_name           = string
-            destination_id             = string
-          }) 
-        )
+        #Can be set to VPC name set in this module in vpc_setup variable or external VPC id
+        vpc     = string
+
+        #Sets optional values for route table
+        #Valid values:
+        # - propagating_vgws - A list of virtual gateways for propagation.
+        # - tags="<tag_name1>=<tag_value1>,<tag_name2>=<tag_value2>,..."
+        options = map(string)
+
+#        routes           = list(
+#          object({
+#            #Can specify three kinds of targets
+#            #  - IPv4 CIDR block            - an IP range in the ##.##.##.##/## format. Most common, identified by '.' in string
+#            #  - IPv6 CIDR block            - an IP range in IPv6 style (####:####:####/##). Identified by the ':' in the string
+#            #  - destination prefix list ID - An AWS managed prefix list ID. Identified by starting with 'pl-'
+#            target = string
+#      
+#            #Sets options for this route
+#            #MUST SET THE VALUE 'type' or this module will error
+#            #Valid values for 'type':
+#            #  - "internet gateway" - automatically resolves route to internet gateway attached to VPC
+#            #  - "egress only internet gateway" - automatically resolves route to egress only internet gateway attached to VPC
+#            #  - "vpn gateway" - automatically resolves route to  vpn gateway attached to VPC
+#            #  - "nat gateway" - resolves route to nat gateway specified in "destination". Can use name in module or external id
+#            #  - "vpc peering" - resolves route to vpc peering setup specified in "destination". Can use name in module or external id
+#            #  - "vpc endpoint" - resolves route to vpc endpoint specified in "destination". Can use name in module or external id
+#            #  - "transit gateway" - resolves route to transit gateway in "destination". Must attach transit gateway to VPC. Can use name in module or external id
+#            #  - "carrier gateway" - resolves route to carrier gateway in "destination". Can only use ID
+#            #  - "network interface" - resolves route to network interface in "destination". Can only use ID
+#            #OTHER options:
+#            #  - destination="<The name or ID of the destination object. Be careful to match to the type>"
+#            route_options = map(string)
+# 
+#          }) 
+#        )
       })
   )
 }

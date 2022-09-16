@@ -1,0 +1,5 @@
+terraform apply -target=module.network_boundaries
+terraform apply -target=module.security_groups.aws_security_group.security_groups
+terraform apply -target=module.security_groups
+terraform apply -target=module.route_tables
+terraform apply -target=module.vpc_endpoints

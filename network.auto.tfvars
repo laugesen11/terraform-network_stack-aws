@@ -100,22 +100,10 @@ vpc_peering = [
 
 vpc_endpoints = [
   {
-    name                = "Sample S3 Gateway endpoint"
-    service_name        = "com.amazonaws.us-east-1.s3"
-    vpc_id              = null
-    vpc_name            = "Larry test VPC"
-    auto_accept         = true
-    private_dns_enabled = true
-    security_group_ids  = null
-    vpc_endpoint_type   = "Gateway"
-    tags                = { "Type" = "Sample" }
-
-    subnets = [
-      {
-        name = "Larry Test Subnet"
-        id = null
-      },
-    ]
+    name         = "Sample S3 Gateway endpoint"
+    service_name = "com.amazonaws.us-east-1.s3"
+    vpc          = "Larry test VPC"
+    options      = {auto_accept="true",private_dns_enabled="true",tags="Type=Sample",subnets="Larry Test Subnet"}
   },
 ]
 
